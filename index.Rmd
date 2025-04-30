@@ -1,0 +1,113 @@
+---
+title: "JSC370 Final Project"
+author: "Dennis Tat"
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+---
+
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(plotly)
+library(widgetframe)
+library(tidytext)
+
+
+sb_locs <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/starbucks-locations.csv")
+
+sb_nutr <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/starbucks-menu-nutrition.csv")
+
+usa_pop <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/us_state_pop.csv")
+
+usa_states<-read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/states.csv")
+
+
+
+sb_usa <- sb_locs |> filter(Country == "US")
+
+sb_locs_state <- sb_usa |>
+  rename(State = "State/Province") |>
+  group_by(State) |>
+  summarize(n_stores = n())
+
+# need state abbreviations
+usa_pop_abbr <- 
+  full_join(usa_pop, usa_states, by = join_by(state == State)
+            ) 
+  
+sb_locs_state <- full_join(usa_pop_abbr, sb_locs_state, by = join_by(Abbreviation == State))
+
+topwords <- sb_nutr |>
+  unnest_tokens(word, Item, token="words") |>
+  group_by(word) |> 
+  summarise(word_frequency = n()) |>
+  arrange(across(word_frequency, desc)) |>
+  head(10)
+  
+
+
+```
+
+
+## Showcasing plots {.tabset}
+
+### Figure 1
+
+```{r echo=FALSE, warning=FALSE}
+sb_nutr |>
+  unnest_tokens(word, Item, token = "words") |>
+  filter(word %in% topwords$word[1:10]) |>
+  plot_ly(
+    x = ~Calories,
+    y = ~`Carb. (g)`,
+    z = ~`Protein (g)`,
+    color = ~word,
+    type = "scatter3d",
+    mode = "markers",
+    marker = list(size = 5)
+  ) |>
+  layout(
+    title = "3D scatterplot of calories, carbs, and protein",
+    scene = list(
+      xaxis = list(title = "Calories") ,
+      yaxis = list(title = "Carbs"),
+      zaxis = list(title = "Proteins")
+    )
+  )
+```
+
+### Figure 2
+
+```{r echo=FALSE, warning=FALSE}
+# Set up mapping details
+set_map_details <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('steelblue')
+)
+
+# Make sure both maps are on the same color scale
+shadeLimit <- 125
+
+# Create hover text
+sb_locs_state$hover <- with(sb_locs_state, paste("Number of Starbucks: ", n_stores, '<br>', "State: ", state, '<br>', "Population: ", population))
+
+# Create the map
+map1 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
+  add_trace(z = ~n_stores, text = ~hover, locations = ~Abbreviation, color = ~n_stores, colors = 'Purples') |>
+  layout(title = "Starbucks stores by State", geo = set_map_details)
+map1
+
+
+map2 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
+  add_trace(z = ~population, text = ~hover, locations = ~Abbreviation, color = ~population, colors = 'Purples') |>
+  layout(title = "Starbucks stores by population", geo = set_map_details)
+
+subplot(map1, map2)
+```
+
+{-}
