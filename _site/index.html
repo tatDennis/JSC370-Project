@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Dennis Tat" />
+
+<meta name="date" content="2025-03-17" />
+
+<title>JSC370 Midterm Report</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">JSC370 Midterm Report</h1>
+<h4 class="author">Dennis Tat</h4>
+<h4 class="date">2025-03-17</h4>
+
+</div>
+
+
+<p><a
+href="https://github.com/tatDennis/JSC370/tree/main/Midterm">Link</a> to
+GitHub repository.</p>
+<p>The data set was too large to include in the GitHub repository. I’ve
+added a link to where the data was acquired.</p>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In recent years, the cost of living in Canada has risen
+significantly, making it increasingly difficult for salaries to keep
+pace. For many young people entering the workforce, home ownership feels
+less and less attainable, while those who already own real estate are
+seeing their assets appreciate in value. This has fueled the common
+belief that the older generation had a much easier time achieving
+financial stability than younger people today.</p>
+<p>With this in mind, some interesting questions to ask are:</p>
+<p>Has the median income of Canadians kept up with inflation?</p>
+<p>How has the median income changed throughout the years for young and
+old people? what about for men and women?</p>
+<p>How does the change in income compare with the change in housing
+prices?</p>
+</div>
+<div id="the-dataset" class="section level2">
+<h2>The Dataset</h2>
+<p>The first data set is called ‘Income of individuals by age group, sex
+and income source, Canada, provinces and selected census metropolitan
+areas’, and contains detailed information about annual income from 1976
+until 2022. It also divides the data into the different provinces and
+territories of Canada, as well as different demographics.</p>
+<p>The second data set is called ‘Consumer Price Index, annual average,
+not seasonally adjusted’, and features the consumer Price index of many
+common products, ranging from 1914 until 2024. The CPI is a useful
+statistic for measuring inflation, as it serves as a direct way to
+compare purchasing power throughout each year.</p>
+<p>The final data set is called ‘Analytical house prices indicators’,
+and similar to the above consumer price index, features the change in
+average house price. Although housing was contained in the above data
+set, it uses a different definition of housing which involves rent
+prices, whereas this analysis seeks to understand housing ownership.</p>
+</div>
+<div id="methods" class="section level2">
+<h2>Methods</h2>
+<p>The <a
+href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110023901&amp;pickMembers%5B0%5D=1.1&amp;pickMembers%5B1%5D=2.5&amp;pickMembers%5B2%5D=3.1&amp;pickMembers%5B3%5D=4.1&amp;cubeTimeFrame.startYear=1976&amp;cubeTimeFrame.endYear=2022&amp;referencePeriods=19760101%2C20220101">income</a>
+and <a
+href="https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000501">CPI</a>
+data sets were taken directly from the Statcan website.</p>
+<p><a
+href="https://data-explorer.oecd.org/vis?lc=en&amp;tm=DF_HOUSE_PRICES&amp;pg=0&amp;snb=1&amp;vw=tb&amp;df%5Bds%5D=dsDisseminateFinalDMZ&amp;df%5Bid%5D=DSD_AN_HOUSE_PRICES%40DF_HOUSE_PRICES&amp;df%5Bag%5D=OECD.ECO.MPD&amp;df%5Bvs%5D=1.0&amp;pd=1960%2C2024&amp;dq=.A.RHP.&amp;to%5BTIME_PERIOD%5D=false">Housing
+price index</a> was downloaded from OECD.</p>
+<p>Finally, we convert each data set to use 2002 as its benchmark. This
+is done by adjusting all of the data sets so that 2002 has an index
+value of 100, and every other year is adjusted by this same value.</p>
+<p>We will keep these data sets separate, and merge them as needed for
+each question.</p>
+</div>
+<div id="preliminary-results" class="section level2">
+<h2>Preliminary Results</h2>
+<div id="income-index" class="section level3">
+<h3>Income Index</h3>
+<p>Lets first examine the income data set. It contains the median income
+of Canadians from 1976 until 2022, and has information on male, female,
+and both sexes. Additionally, it features a variety of age groups for
+comparison.</p>
+<p>An extremely interesting point to note is the years and demographics
+which had the largest income index are young men aged 15-24 in the
+1970s, and older women aged 55-64 in the 2010s and 2020s. This is most
+because during the 1970s, it was more common for teenage boys to work,
+as well as the fact that more women have joined the workforce compared
+to before.</p>
+<p>The lowest income index is mainly comprised of older people aged
+55-64 in the 1970s. This is most likely because retirement benefits have
+improved by a lot since then.</p>
+<p>Its also important to note that this does not mean these people made
+the most or least amount of money, rather, the group that had the
+highest or lowest income within their own group, adjusted for
+inflation.</p>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Largest Income Indexes
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:left;">
+Age.group
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Sex
+</th>
+<th style="text-align:right;">
+Adjusted.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+2020
+</td>
+<td style="text-align:left;">
+55 to 64 years
+</td>
+<td style="text-align:right;">
+41200
+</td>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:right;">
+190.7407
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2022
+</td>
+<td style="text-align:left;">
+55 to 64 years
+</td>
+<td style="text-align:right;">
+41100
+</td>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:right;">
+190.2778
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:left;">
+15 to 24 years
+</td>
+<td style="text-align:right;">
+24600
+</td>
+<td style="text-align:left;">
+Males
+</td>
+<td style="text-align:right;">
+189.2308
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1979
+</td>
+<td style="text-align:left;">
+15 to 24 years
+</td>
+<td style="text-align:right;">
+24600
+</td>
+<td style="text-align:left;">
+Males
+</td>
+<td style="text-align:right;">
+189.2308
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2021
+</td>
+<td style="text-align:left;">
+55 to 64 years
+</td>
+<td style="text-align:right;">
+40800
+</td>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:right;">
+188.8889
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1978
+</td>
+<td style="text-align:left;">
+15 to 24 years
+</td>
+<td style="text-align:right;">
+23600
+</td>
+<td style="text-align:left;">
+Males
+</td>
+<td style="text-align:right;">
+181.5385
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Lowest Income Indexes
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:left;">
+Age.group
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Sex
+</th>
+<th style="text-align:right;">
+Adjusted.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+21100
+</td>
+<td style="text-align:left;">
+Males
+</td>
+<td style="text-align:right;">
+60.11396
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+14000
+</td>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:right;">
+59.07173
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+13700
+</td>
+<td style="text-align:left;">
+Females
+</td>
+<td style="text-align:right;">
+57.80591
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+15800
+</td>
+<td style="text-align:left;">
+Both sexes
+</td>
+<td style="text-align:right;">
+57.45455
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+15700
+</td>
+<td style="text-align:left;">
+Both sexes
+</td>
+<td style="text-align:right;">
+57.09091
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:left;">
+65 years and over
+</td>
+<td style="text-align:right;">
+19500
+</td>
+<td style="text-align:left;">
+Males
+</td>
+<td style="text-align:right;">
+55.55556
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="cpi" class="section level3">
+<h3>CPI</h3>
+<p>Moving on to the CPI data set, it appears that not only are
+cigarettes and tobacco more expensive now than ever, but that it also
+had its cheapest recorded prices in the 1970s. The price of nicotine
+products has been steadily increasing in order to encourage users to
+quit, which would explain the tripling in prices since 2002.</p>
+<p>Additionally, oil in recent years is also at an all time high, most
+likely due to the ongoing conflicts around the world.</p>
+<p>Conversely, we see that digital computing equipment has decreased by
+a multiple of 30 between 1990 and 2024, as computers and phones have
+become more accessible in recent years.</p>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Lowest CPI Values
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Products.and.product.groups
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+105
+</td>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+11.9
+</td>
+<td style="text-align:left;">
+Tobacco products and smokers’ supplies
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+106
+</td>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:left;">
+Cigarettes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12077
+</td>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+12.7
+</td>
+<td style="text-align:left;">
+Digital computing equipment and devices
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+80
+</td>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+12.9
+</td>
+<td style="text-align:left;">
+Air transportation
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+228
+</td>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:right;">
+12.9
+</td>
+<td style="text-align:left;">
+Tobacco products and smokers’ supplies
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+229
+</td>
+<td style="text-align:right;">
+1977
+</td>
+<td style="text-align:right;">
+13.0
+</td>
+<td style="text-align:left;">
+Cigarettes
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Largest CPI Values
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Products.and.product.groups
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+12117
+</td>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+323.7
+</td>
+<td style="text-align:left;">
+Cigarettes
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11967
+</td>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+342.9
+</td>
+<td style="text-align:left;">
+Homeowners’ home and mortgage insurance
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11719
+</td>
+<td style="text-align:right;">
+2023
+</td>
+<td style="text-align:right;">
+345.2
+</td>
+<td style="text-align:left;">
+Fuel oil and other fuels
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4458
+</td>
+<td style="text-align:right;">
+1996
+</td>
+<td style="text-align:right;">
+357.7
+</td>
+<td style="text-align:left;">
+Digital computing equipment and devices
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11464
+</td>
+<td style="text-align:right;">
+2022
+</td>
+<td style="text-align:right;">
+388.7
+</td>
+<td style="text-align:left;">
+Fuel oil and other fuels
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4187
+</td>
+<td style="text-align:right;">
+1995
+</td>
+<td style="text-align:right;">
+390.0
+</td>
+<td style="text-align:left;">
+Digital computing equipment and devices
+</td>
+</tr>
+</tbody>
+</table>
+<p>Taking a look at the overall CPI, filtering on “all items”, we see
+that a dollar in 1976 is worth approximately $5.17 today. Although this
+is more of a generalization, it is the statistic which best captures
+inflation.</p>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Products.and.product.groups
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+31.1
+</td>
+<td style="text-align:left;">
+All-items
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+160.9
+</td>
+<td style="text-align:left;">
+All-items
+</td>
+</tr>
+</tbody>
+</table>
+<p>And just for fun, it appears that egg prices have also increased by a
+factor of 5.</p>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+</caption>
+<thead>
+<tr>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:left;">
+Products.and.product.groups
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1976
+</td>
+<td style="text-align:right;">
+46.3
+</td>
+<td style="text-align:left;">
+Eggs
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+220.5
+</td>
+<td style="text-align:left;">
+Eggs
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="housing-index" class="section level3">
+<h3>Housing Index</h3>
+<p>Finally, we take a look at the housing index.</p>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Largest Housing Index Values
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:right;">
+Adjusted.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+1970
+</td>
+<td style="text-align:right;">
+31.03392
+</td>
+<td style="text-align:right;">
+57.38909
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+1971
+</td>
+<td style="text-align:right;">
+31.66271
+</td>
+<td style="text-align:right;">
+58.55187
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:right;">
+1972
+</td>
+<td style="text-align:right;">
+32.70961
+</td>
+<td style="text-align:right;">
+60.48785
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+15
+</td>
+<td style="text-align:right;">
+1984
+</td>
+<td style="text-align:right;">
+35.43767
+</td>
+<td style="text-align:right;">
+65.53267
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+16
+</td>
+<td style="text-align:right;">
+1985
+</td>
+<td style="text-align:right;">
+35.87106
+</td>
+<td style="text-align:right;">
+66.33411
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:right;">
+1973
+</td>
+<td style="text-align:right;">
+36.92775
+</td>
+<td style="text-align:right;">
+68.28818
+</td>
+</tr>
+</tbody>
+</table>
+<table class="table lightable-paper lightable-hover" style="font-size: 10px; margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<caption style="font-size: initial !important;">
+Lowest Housing Index Values
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Year
+</th>
+<th style="text-align:right;">
+Value
+</th>
+<th style="text-align:right;">
+Adjusted.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+49
+</td>
+<td style="text-align:right;">
+2018
+</td>
+<td style="text-align:right;">
+122.8595
+</td>
+<td style="text-align:right;">
+227.1963
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+51
+</td>
+<td style="text-align:right;">
+2020
+</td>
+<td style="text-align:right;">
+129.6595
+</td>
+<td style="text-align:right;">
+239.7713
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+54
+</td>
+<td style="text-align:right;">
+2023
+</td>
+<td style="text-align:right;">
+143.8154
+</td>
+<td style="text-align:right;">
+265.9489
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+52
+</td>
+<td style="text-align:right;">
+2021
+</td>
+<td style="text-align:right;">
+144.4989
+</td>
+<td style="text-align:right;">
+267.2128
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+55
+</td>
+<td style="text-align:right;">
+2024
+</td>
+<td style="text-align:right;">
+144.6847
+</td>
+<td style="text-align:right;">
+267.5564
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+53
+</td>
+<td style="text-align:right;">
+2022
+</td>
+<td style="text-align:right;">
+152.3432
+</td>
+<td style="text-align:right;">
+281.7187
+</td>
+</tr>
+</tbody>
+</table>
+<p>It should be no surprise that housing prices have also increased by a
+lot since the 70s, with prices reaching around recent years. Although
+these results appear to be aligned with the other products earlier, the
+housing data takes an average across all of Canada. Observing data sets
+of Vancouver or Toronto would most likely yield more extreme
+results.</p>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Now lets revisit some of our earlier questions from part 1.</p>
+<div id="has-the-median-income-of-canadians-kept-up-with-inflation"
+class="section level4">
+<h4>Has the median income of Canadians kept up with inflation?</h4>
+<p>Based on this output, we see that the CPI has been steadily
+increasing, and looks to be accelerating in growth since 2020. However,
+the income index of Canadians has mostly remained stagnant.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div
+id="how-has-the-median-income-changed-throughout-the-years-for-young-and-old-people"
+class="section level4">
+<h4>How has the median income changed throughout the years for young and
+old people?</h4>
+<p>What about for men and women?</p>
+<p>We see that older Canadians have had an income increase, whereas
+younger Canadians have an income decrease. Factors include less children
+working, seniors having later retirements, as well as retirement
+benefits in the 21st century.</p>
+<p>We also see that women have had an increase in their annual income,
+most likely due to the fact historically, less women were part of the
+workforce.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div
+id="how-does-the-change-in-income-compare-with-the-change-in-housing-prices"
+class="section level4">
+<h4>How does the change in income compare with the change in housing
+prices?</h4>
+<p>For this question, we will look at Canadians of both sexes, aged
+25-54. We see that the Canadian income index has not been able to keep
+up with the housing index.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>library(tidyr)
+library(dplyr)
+cpi_reshape &lt;- cpi %&gt;%
+  pivot_wider(
+    names_from = Products.and.product.groups,  # New column names will come from the &quot;Product&quot; column
+    values_from = Value    # Values will come from the &quot;CPI&quot; column
+  )</code></pre>
+<pre class="r"><code>cpi_reshape_clean &lt;- cpi_reshape |&gt;
+  select(Year, Food, Gasoline, &quot;Mortgage interest cost&quot;, &quot;Health care&quot;, &quot;Dental care services&quot;,
+         &quot;Education&quot;, &quot;Property taxes and other special charges&quot;, &quot;Transportation&quot;, &quot;Alcoholic beverages&quot;, &quot;Child care services&quot;, &quot;Toiletry items and cosmetics&quot;)
+
+cpi_reshape_clean &lt;- merge(cpi_reshape_clean, housing, by = &quot;Year&quot;, all.x = TRUE)</code></pre>
+<pre class="r"><code>cpi_reshape_clean &lt;- cpi_reshape_clean %&gt;%
+  rename_with(~ gsub(&quot; &quot;, &quot;.&quot;, .), everything())</code></pre>
+<pre class="r"><code>model &lt;- lm(Adjusted.value ~ Food + `Mortgage.interest.cost`  +
+            `Health.care` + `Property.taxes.and.other.special.charges` + Year + Gasoline +
+              Transportation
+            , data = cpi_reshape_clean)
+
+# View the model summary
+summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Adjusted.value ~ Food + Mortgage.interest.cost + 
+##     Health.care + Property.taxes.and.other.special.charges + 
+##     Year + Gasoline + Transportation, data = cpi_reshape_clean)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -22.044  -7.492   1.147   8.395  25.352 
+## 
+## Coefficients:
+##                                           Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                               614.4861  5379.6564   0.114 0.909618
+## Food                                        1.5400     0.5804   2.653 0.011287
+## Mortgage.interest.cost                     -0.2958     0.3254  -0.909 0.368779
+## Health.care                                -2.4445     0.8199  -2.981 0.004812
+## Property.taxes.and.other.special.charges    1.9477     0.5138   3.791 0.000485
+## Year                                       -0.2863     2.7342  -0.105 0.917107
+## Gasoline                                    0.2758     0.1476   1.869 0.068813
+## Transportation                             -0.4112     0.6161  -0.668 0.508181
+##                                             
+## (Intercept)                                 
+## Food                                     *  
+## Mortgage.interest.cost                      
+## Health.care                              ** 
+## Property.taxes.and.other.special.charges ***
+## Year                                        
+## Gasoline                                 .  
+## Transportation                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 11.8 on 41 degrees of freedom
+## Multiple R-squared:  0.9702, Adjusted R-squared:  0.9651 
+## F-statistic: 190.9 on 7 and 41 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(model)$adj.r.squared</code></pre>
+<pre><code>## [1] 0.965149</code></pre>
+<pre class="r"><code>library(mgcv)</code></pre>
+<pre><code>## Loading required package: nlme</code></pre>
+<pre><code>## 
+## Attaching package: &#39;nlme&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     collapse</code></pre>
+<pre><code>## This is mgcv 1.9-1. For overview type &#39;help(&quot;mgcv-package&quot;)&#39;.</code></pre>
+<pre class="r"><code>gam_model &lt;- gam(Adjusted.value ~ s(Year) + Food + `Mortgage.interest.cost`  +
+            `Health.care` + `Property.taxes.and.other.special.charges` + Gasoline +
+              Transportation, data = cpi_reshape_clean)
+
+summary(gam_model)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## Adjusted.value ~ s(Year) + Food + Mortgage.interest.cost + Health.care + 
+##     Property.taxes.and.other.special.charges + Gasoline + Transportation
+## 
+## Parametric coefficients:
+##                                          Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                              276.8613    91.0782   3.040 0.004544
+## Food                                      -0.7203     0.5173  -1.392 0.172897
+## Mortgage.interest.cost                    -0.5207     0.1410  -3.693 0.000777
+## Health.care                                2.0720     0.9799   2.115 0.041915
+## Property.taxes.and.other.special.charges  -1.6141     0.6598  -2.447 0.019776
+## Gasoline                                   0.2139     0.1375   1.556 0.129108
+## Transportation                            -0.7574     0.6128  -1.236 0.224998
+##                                             
+## (Intercept)                              ** 
+## Food                                        
+## Mortgage.interest.cost                   ***
+## Health.care                              *  
+## Property.taxes.and.other.special.charges *  
+## Gasoline                                    
+## Transportation                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##           edf Ref.df     F p-value    
+## s(Year) 8.163  8.816 30.13  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.995   Deviance explained = 99.7%
+## GCV = 26.514  Scale est. = 18.31     n = 49</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre class="r"><code>project_train_index &lt;- createDataPartition(cpi_reshape_clean$Adjusted.value, p = 0.7, list = FALSE)
+project_train &lt;- cpi_reshape_clean[project_train_index, ]
+project_test &lt;- cpi_reshape_clean[-project_train_index, ]</code></pre>
+<pre class="r"><code>tree &lt;- rpart(Adjusted.value ~ ., 
+                    data = project_train, 
+                    method = &quot;class&quot;,
+                    control = rpart.control(minsplit = 10, 
+                                            minbucket = 3, 
+                                            cp = 0.01, 
+                                            xval = 10))</code></pre>
+<pre class="r"><code>plotcp(tree)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre class="r"><code>printcp(tree)</code></pre>
+<pre><code>## 
+## Classification tree:
+## rpart(formula = Adjusted.value ~ ., data = project_train, method = &quot;class&quot;, 
+##     control = rpart.control(minsplit = 10, minbucket = 3, cp = 0.01, 
+##         xval = 10))
+## 
+## Variables actually used in tree construction:
+## [1] Value Year 
+## 
+## Root node error: 36/37 = 0.97297
+## 
+## n= 37 
+## 
+##         CP nsplit rel error xerror xstd
+## 1 0.027778      0   1.00000 1.0278    0
+## 2 0.010000      8   0.77778 1.0278    0</code></pre>
+<pre class="r"><code>optimalcp = tree$cptable[which.min(tree$cptable[, &quot;xerror&quot;]), &quot;CP&quot;]</code></pre>
+<pre class="r"><code>tree_prune &lt;- prune(tree, cp = optimalcp)</code></pre>
+<pre class="r"><code>bag&lt;- randomForest(Adjusted.value~ ., 
+                         data = project_train, 
+                         mtry = ncol(project_train) - 1, 
+                         importance = TRUE,
+                         na.action = na.omit)
+# oob error rate
+bag_oob &lt;- bag$mse[length(bag$mse)]
+bag_oob</code></pre>
+<pre><code>## [1] 82.77037</code></pre>
+<pre class="r"><code>importance(bag)</code></pre>
+<pre><code>##                                            %IncMSE IncNodePurity
+## Year                                      7.350398    10036.5416
+## Food                                      7.496565    11122.2247
+## Gasoline                                  4.855217     5878.1777
+## Mortgage.interest.cost                    1.720891      486.8253
+## Health.care                               8.040724    10435.9645
+## Dental.care.services                      7.675635     9559.9199
+## Education                                 7.652530    10562.7072
+## Property.taxes.and.other.special.charges  7.588603    11609.6524
+## Transportation                            8.036870     8807.4847
+## Alcoholic.beverages                       7.753345     9675.0280
+## Child.care.services                       7.827193     9510.7225
+## Toiletry.items.and.cosmetics              6.440890     7514.5100
+## Value                                    11.953134    23355.3560</code></pre>
+<pre class="r"><code>rf &lt;- randomForest(Adjusted.value ~ ., 
+                         data = project_train, 
+                         importance = TRUE, 
+                         na.action = na.omit)
+#oob error rate
+rf_oob &lt;- rf$mse[length(rf$mse)]
+rf_oob</code></pre>
+<pre><code>## [1] 77.6244</code></pre>
+<pre class="r"><code>importance(rf)</code></pre>
+<pre><code>##                                           %IncMSE IncNodePurity
+## Year                                     8.965246    12735.6929
+## Food                                     8.942856    12983.6146
+## Gasoline                                 5.057827     4408.1797
+## Mortgage.interest.cost                   2.759764      417.3676
+## Health.care                              8.533162    12548.9317
+## Dental.care.services                     8.381505    12101.5978
+## Education                                7.770784    11640.5419
+## Property.taxes.and.other.special.charges 8.166033    12946.3123
+## Transportation                           7.632600    10454.2995
+## Alcoholic.beverages                      8.082398    11533.5972
+## Child.care.services                      7.282770     9649.4225
+## Toiletry.items.and.cosmetics             5.611084     6735.9145
+## Value                                    8.339564    11392.3084</code></pre>
+<pre class="r"><code>library(knitr)
+
+model_performance &lt;- data.frame(
+  Model = c(
+    &quot;Bagging&quot;,
+    &quot;Random Forest&quot;
+  ),
+  Error_MSE = c(
+    bag_oob,
+    rf_oob
+  )
+)
+
+kable(model_performance, col.names = c(&quot;Model&quot;, &quot;Error / MSE&quot;), caption = &quot;Model Performance Comparison&quot;)</code></pre>
+<table>
+<caption>Model Performance Comparison</caption>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">Error / MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bagging</td>
+<td align="right">82.77037</td>
+</tr>
+<tr class="even">
+<td align="left">Random Forest</td>
+<td align="right">77.62440</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>predictions &lt;- predict(model)
+
+residuals &lt;- cpi_reshape_clean$Adjusted.value - predictions
+
+MSE &lt;- mean(residuals^2)
+print(MSE)</code></pre>
+<pre><code>## [1] 116.4158</code></pre>
+<pre class="r"><code>gam_predictions &lt;- predict(gam_model)
+
+gam_residuals &lt;- cpi_reshape_clean$Adjusted.value - gam_predictions
+
+gam_MSE &lt;- mean(gam_residuals^2)
+print(gam_MSE)</code></pre>
+<pre><code>## [1] 12.64391</code></pre>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

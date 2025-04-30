@@ -8,106 +8,460 @@ output:
 ---
 
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+---
+title: "JSC370 Midterm Report"
+output: html_document
+date: "2025-03-17"
+---
 
-library(tidyverse)
-library(plotly)
-library(widgetframe)
-library(tidytext)
+```{r setup, include=FALSE}
+set.seed(1007)
+library(dplyr)
+library(ggplot2)
+library(microbenchmark)
+library(parallel)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(kableExtra)
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(kableExtra))
+
+income <- read.csv("Data/income.csv")
+cpi <- read.csv("Data/cpi.csv")
+housing <- read.csv("Data/housing.csv")
+```
+
+[Link](https://github.com/tatDennis/JSC370/tree/main/Midterm) to GitHub repository.
+
+The data set was too large to include in the GitHub repository. I've added a link
+to where the data was acquired.
+
+## Introduction
+
+In recent years, the cost of living in Canada has risen significantly, making it
+increasingly difficult for salaries to keep pace. For many young people entering
+the workforce, home ownership feels less and less attainable, while those who 
+already own real estate are seeing their assets appreciate in value. This has 
+fueled the common belief that the older generation had a much easier time 
+achieving financial stability than younger people today.
+
+With this in mind, some interesting questions to ask are:
+
+Has the median income of Canadians kept up with inflation?
+
+How has the median income changed throughout the years for young and old people?
+what about for men and women?
+
+How does the change in income compare with the change in housing prices?
+
+## The Dataset
+
+The first data set is called 'Income of individuals by age group, sex and income 
+source, Canada, provinces and selected census metropolitan areas', and contains 
+detailed information about annual income from 1976 until 2022. It also divides
+the data into the different provinces and territories of Canada, as well as 
+different demographics. 
+
+The second data set is called 'Consumer Price Index, annual average, 
+not seasonally adjusted', and features the consumer Price index of many common
+products, ranging from 1914 until 2024. The CPI is a useful statistic for 
+measuring inflation, as it serves as a direct way to compare purchasing power
+throughout each year.
+
+The final data set is called 'Analytical house prices indicators', and similar
+to the above consumer price index, features the change in average house price.
+Although housing was contained in the above data set, it uses a different 
+definition of housing which involves rent prices, whereas this analysis seeks to
+understand housing ownership.
+
+## Methods
+
+The [income](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110023901&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=2.5&pickMembers%5B2%5D=3.1&pickMembers%5B3%5D=4.1&cubeTimeFrame.startYear=1976&cubeTimeFrame.endYear=2022&referencePeriods=19760101%2C20220101) and [CPI](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000501) data sets were taken directly from the Statcan website.
+
+[Housing price index](https://data-explorer.oecd.org/vis?lc=en&tm=DF_HOUSE_PRICES&pg=0&snb=1&vw=tb&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_AN_HOUSE_PRICES%40DF_HOUSE_PRICES&df[ag]=OECD.ECO.MPD&df[vs]=1.0&pd=1960%2C2024&dq=.A.RHP.&to[TIME_PERIOD]=false) was downloaded from OECD.
 
 
-sb_locs <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/starbucks-locations.csv")
+Finally, we convert each data set to use 2002 as its benchmark. This is done by
+adjusting all of the data sets so that 2002 has an index value of 100, and every
+other year is adjusted by this same value. 
 
-sb_nutr <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/starbucks-menu-nutrition.csv")
+```{r echo=FALSE}
+housing <- housing |>
+  mutate(Y = 100 / Value[Year == 2002],
+         Adjusted.value = Value * Y) |>
+  select(-Y)
+```
 
-usa_pop <- read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/us_state_pop.csv")
+```{r echo=FALSE}
+income <- income %>%
+  group_by(Age.group, Sex) %>%  
+  mutate(Adjusted.value = Value / Value[Year == 2022])
 
-usa_states<-read_csv("https://raw.githubusercontent.com/JSC370/JSC370-2025/refs/heads/main/data/starbucks/states.csv")
+income <- income %>%
+  group_by(Age.group, Sex) %>%
+  mutate(Y = 100 / Adjusted.value[Year == 2002], 
+         Adjusted.value = Adjusted.value * Y) %>% 
+  ungroup() %>%
+  select(-Y)
+```
 
 
+We will keep these data sets separate, and merge them as needed for each question.
 
-sb_usa <- sb_locs |> filter(Country == "US")
+## Preliminary Results
 
-sb_locs_state <- sb_usa |>
-  rename(State = "State/Province") |>
-  group_by(State) |>
-  summarize(n_stores = n())
+### Income Index 
 
-# need state abbreviations
-usa_pop_abbr <- 
-  full_join(usa_pop, usa_states, by = join_by(state == State)
-            ) 
-  
-sb_locs_state <- full_join(usa_pop_abbr, sb_locs_state, by = join_by(Abbreviation == State))
+Lets first examine the income data set. It contains the median income of Canadians
+from 1976 until 2022, and has information on male, female, and both sexes. Additionally,
+it features a variety of age groups for comparison. 
 
-topwords <- sb_nutr |>
-  unnest_tokens(word, Item, token="words") |>
-  group_by(word) |> 
-  summarise(word_frequency = n()) |>
-  arrange(across(word_frequency, desc)) |>
-  head(10)
-  
+An extremely interesting point to note is the years and demographics which had
+the largest income index are young men aged 15-24 in the 1970s, and older 
+women aged 55-64 in the 2010s and 2020s. This is most because during the 1970s,
+it was more common for teenage boys to work, as well as the fact that more women
+have joined the workforce compared to before.
 
+The lowest income index is mainly comprised of older people aged 55-64 in the 1970s.
+This is most likely because retirement benefits have improved by a lot since then.
+
+Its also important to note that this does not mean these people made the most
+or least amount of money, rather, the group that had the highest or lowest income
+within their own group, adjusted for inflation.
+```{r include=FALSE, echo=FALSE}
+unique(income$Age.group)
+unique(income$Sex)
+summary(income)
+summary(cpi)
+```
+
+```{r echo=FALSE}
+kable(head(income[order(-income$Adjusted.value), ]), caption = "Largest Income Indexes", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+
+kable(tail(income[order(-income$Adjusted.value), ]), caption = "Lowest Income Indexes", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+```
+
+### CPI
+
+Moving on to the CPI data set, it appears that not only are cigarettes and tobacco
+more expensive now than ever, but that it also had its cheapest recorded prices 
+in the 1970s. The price of nicotine products has been steadily increasing in order
+to encourage users to quit, which would explain the tripling in prices since 2002. 
+
+Additionally, oil in recent years is also at an all time high, most likely due
+to the ongoing conflicts around the world. 
+
+Conversely, we see that digital computing equipment has decreased by a multiple of 30
+between 1990 and 2024, as computers and phones have become more accessible in
+recent years.
+
+```{r echo=FALSE}
+kable(head(cpi[order(cpi$Value), ]), caption = "Lowest CPI Values", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+
+kable(tail(cpi[order(cpi$Value), ]), caption = "Largest CPI Values", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+```
+
+Taking a look at the overall CPI, filtering on "all items", we see that a dollar
+in 1976 is worth approximately $5.17 today. Although this is more of a generalization,
+it is the statistic which best captures inflation. 
+
+```{r echo=FALSE}
+cpi_filtered <- cpi %>%
+  filter(Products.and.product.groups == "All-items") %>%
+  filter(Year %in% c(1976, 2024))
+
+kable(cpi_filtered, caption = "", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
 
 ```
 
 
-## Showcasing plots {.tabset}
+And just for fun, it appears that egg prices have also increased by a factor of 5. 
 
-### Figure 1
+```{r echo=FALSE}
+cpi_filtered <- cpi %>%
+  filter(Products.and.product.groups == "Eggs") %>%
+  filter(Year %in% c(1976, 2024))
+
+kable(cpi_filtered, caption = "", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+```
+
+### Housing Index
+
+Finally, we take a look at the housing index. 
+
+```{r echo=FALSE}
+kable(head(housing[order(housing$Adjusted.value), ]), caption = "Largest Housing Index Values", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+
+kable(tail(housing[order(housing$Adjusted.value), ]), caption = "Lowest Housing Index Values", booktabs = TRUE) |>
+  kable_styling(font_size = 10) |>
+  kable_paper("hover", full_width = TRUE)
+```
+
+It should be no surprise that housing prices have also increased by a lot since 
+the 70s, with prices reaching around recent years. Although these results appear
+to be aligned with the other products earlier, the housing data takes an average
+across all of Canada. Observing data sets of Vancouver or Toronto would most
+likely yield more extreme results. 
+
+## Summary
+
+Now lets revisit some of our earlier questions from part 1. 
+
+#### Has the median income of Canadians kept up with inflation?
+
+Based on this output, we see that the CPI has been steadily increasing, and looks
+to be accelerating in growth since 2020. However, the income index of Canadians
+has mostly remained stagnant.  
 
 ```{r echo=FALSE, warning=FALSE}
-sb_nutr |>
-  unnest_tokens(word, Item, token = "words") |>
-  filter(word %in% topwords$word[1:10]) |>
-  plot_ly(
-    x = ~Calories,
-    y = ~`Carb. (g)`,
-    z = ~`Protein (g)`,
-    color = ~word,
-    type = "scatter3d",
-    mode = "markers",
-    marker = list(size = 5)
-  ) |>
-  layout(
-    title = "3D scatterplot of calories, carbs, and protein",
-    scene = list(
-      xaxis = list(title = "Calories") ,
-      yaxis = list(title = "Carbs"),
-      zaxis = list(title = "Proteins")
-    )
+both_sex <- income |>
+  filter(Sex == "Both sexes") |>
+  filter(Age.group == "25 to 54 years")
+
+cpi_average <- cpi |>filter(Products.and.product.groups == "All-items") |> filter(Year >= 1976)
+
+question1 <- merge(
+  cpi_average,
+  both_sex,
+  by = c("Year")
+)
+ggplot(question1, aes(x = Year)) +
+  geom_line(aes(y = Value.x, color = "CPI"), size = 1) +
+  geom_line(aes(y = Adjusted.value, color = "Income Index"), size = 1, alpha = 0.7) +
+  labs(title = "Consumer Pricing and Income Index Trends",
+       x = "Year",
+       y = "Index") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+#### How has the median income changed throughout the years for young and old people?
+What about for men and women?
+
+We see that older Canadians have had an income increase, whereas younger Canadians
+have an income decrease. Factors include less children working, seniors having 
+later retirements, as well as retirement benefits in the 21st century. 
+
+We also see that women have had an increase in their annual income, most likely
+due to the fact historically, less women were part of the workforce.
+
+```{r echo=FALSE}
+both_sex_all_groups <- income |>
+  filter(Sex == "Both sexes") |>
+  filter(Age.group != "15 years and over")|>
+  filter(Age.group != "25 to 54 years")
+  
+ggplot(both_sex_all_groups, aes(x = Year, y = Adjusted.value, color = Age.group)) +
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  labs(title = "Income Index Trends by Age Group",
+       x = "Year", 
+       y = "Index",
+       color = "Age Group") +
+  theme_minimal() + 
+  theme(legend.position = "bottom") 
+```
+
+```{r echo=FALSE}
+male_female_income <- income |>
+  filter(Sex != "Both sexes") |>
+  filter(Age.group == "25 to 54 years")
+
+ggplot(male_female_income, aes(x = Year, y = Adjusted.value, color = Sex)) +
+  geom_line(size = 1) + 
+  geom_point(size = 3) +
+  labs(title = "Income Index Trends by Sex",
+       x = "Year", 
+       y = "Index",
+       color = "Sex") +
+  theme_minimal() + 
+  theme(legend.position = "right")
+
+```
+
+#### How does the change in income compare with the change in housing prices?
+
+For this question, we will look at Canadians of both sexes, aged 25-54. We see 
+that the Canadian income index has not been able to keep up with the 
+housing index.
+
+```{r echo=FALSE}
+question3 <- merge(
+  both_sex,
+  housing,
+  by = c("Year")
+)
+
+ggplot(question3, aes(x = Year)) +
+  geom_line(aes(y = Adjusted.value.y, color = "Housing Index"), size = 1) +
+  geom_line(aes(y = Adjusted.value.x, color = "Income Index"), size = 1, alpha = 0.7) +
+  labs(title = "Housing and Income Index Trends",
+       x = "Year",
+       y = "Index") +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+
+
+
+```{r}
+library(tidyr)
+library(dplyr)
+cpi_reshape <- cpi %>%
+  pivot_wider(
+    names_from = Products.and.product.groups,  # New column names will come from the "Product" column
+    values_from = Value    # Values will come from the "CPI" column
   )
 ```
 
-### Figure 2
+```{r}
+cpi_reshape_clean <- cpi_reshape |>
+  select(Year, Food, Gasoline, "Mortgage interest cost", "Health care", "Dental care services",
+         "Education", "Property taxes and other special charges", "Transportation", "Alcoholic beverages", "Child care services", "Toiletry items and cosmetics")
 
-```{r echo=FALSE, warning=FALSE}
-# Set up mapping details
-set_map_details <- list(
-  scope = 'usa',
-  projection = list(type = 'albers usa'),
-  showlakes = TRUE,
-  lakecolor = toRGB('steelblue')
-)
+cpi_reshape_clean <- merge(cpi_reshape_clean, housing, by = "Year", all.x = TRUE)
 
-# Make sure both maps are on the same color scale
-shadeLimit <- 125
-
-# Create hover text
-sb_locs_state$hover <- with(sb_locs_state, paste("Number of Starbucks: ", n_stores, '<br>', "State: ", state, '<br>', "Population: ", population))
-
-# Create the map
-map1 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
-  add_trace(z = ~n_stores, text = ~hover, locations = ~Abbreviation, color = ~n_stores, colors = 'Purples') |>
-  layout(title = "Starbucks stores by State", geo = set_map_details)
-map1
-
-
-map2 <- plot_geo(sb_locs_state, locationmode = "USA-states") |>
-  add_trace(z = ~population, text = ~hover, locations = ~Abbreviation, color = ~population, colors = 'Purples') |>
-  layout(title = "Starbucks stores by population", geo = set_map_details)
-
-subplot(map1, map2)
 ```
 
-{-}
+```{r}
+cpi_reshape_clean <- cpi_reshape_clean %>%
+  rename_with(~ gsub(" ", ".", .), everything())
+```
+
+
+```{r}
+model <- lm(Adjusted.value ~ Food + `Mortgage.interest.cost`  +
+            `Health.care` + `Property.taxes.and.other.special.charges` + Year + Gasoline +
+              Transportation
+            , data = cpi_reshape_clean)
+
+# View the model summary
+summary(model)
+summary(model)$adj.r.squared
+```
+
+
+```{r}
+library(mgcv)
+
+gam_model <- gam(Adjusted.value ~ s(Year) + Food + `Mortgage.interest.cost`  +
+            `Health.care` + `Property.taxes.and.other.special.charges` + Gasoline +
+              Transportation, data = cpi_reshape_clean)
+
+summary(gam_model)
+
+```
+
+```{r}
+library(caret)
+project_train_index <- createDataPartition(cpi_reshape_clean$Adjusted.value, p = 0.7, list = FALSE)
+project_train <- cpi_reshape_clean[project_train_index, ]
+project_test <- cpi_reshape_clean[-project_train_index, ]
+
+
+```
+
+```{r}
+tree <- rpart(Adjusted.value ~ ., 
+                    data = project_train, 
+                    method = "class",
+                    control = rpart.control(minsplit = 10, 
+                                            minbucket = 3, 
+                                            cp = 0.01, 
+                                            xval = 10))
+```
+
+
+```{r}
+plotcp(tree)
+printcp(tree)
+
+optimalcp = tree$cptable[which.min(tree$cptable[, "xerror"]), "CP"]
+```
+
+```{r}
+tree_prune <- prune(tree, cp = optimalcp)
+```
+
+```{r}
+bag<- randomForest(Adjusted.value~ ., 
+                         data = project_train, 
+                         mtry = ncol(project_train) - 1, 
+                         importance = TRUE,
+                         na.action = na.omit)
+# oob error rate
+bag_oob <- bag$mse[length(bag$mse)]
+bag_oob
+
+importance(bag)
+```
+
+```{r}
+rf <- randomForest(Adjusted.value ~ ., 
+                         data = project_train, 
+                         importance = TRUE, 
+                         na.action = na.omit)
+#oob error rate
+rf_oob <- rf$mse[length(rf$mse)]
+rf_oob
+
+importance(rf)
+
+```
+
+
+
+
+```{r}
+library(knitr)
+
+model_performance <- data.frame(
+  Model = c(
+    "Bagging",
+    "Random Forest"
+  ),
+  Error_MSE = c(
+    bag_oob,
+    rf_oob
+  )
+)
+
+kable(model_performance, col.names = c("Model", "Error / MSE"), caption = "Model Performance Comparison")
+```
+
+
+```{r}
+predictions <- predict(model)
+
+residuals <- cpi_reshape_clean$Adjusted.value - predictions
+
+MSE <- mean(residuals^2)
+print(MSE)
+
+gam_predictions <- predict(gam_model)
+
+gam_residuals <- cpi_reshape_clean$Adjusted.value - gam_predictions
+
+gam_MSE <- mean(gam_residuals^2)
+print(gam_MSE)
+```
+
+
+
+
