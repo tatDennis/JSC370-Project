@@ -9,13 +9,16 @@ output:
 
 
 ---
-title: "JSC370 Midterm Report"
+title: "Income vs. Inflation: Understanding
+Housing Affordability in Canada Across
+Generations"
 output: html_document
-date: "2025-03-17"
+date: "2025-04-25"
 ---
 
 ```{r setup, include=FALSE}
 set.seed(1007)
+library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(microbenchmark)
@@ -24,6 +27,14 @@ library(rpart)
 library(rpart.plot)
 library(randomForest)
 library(kableExtra)
+library(tidyverse)
+library(plotly)
+library(widgetframe)
+library(tidytext)
+library(mgcv)
+library(caret)
+library(knitr)
+
 suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(kableExtra))
 
@@ -32,68 +43,58 @@ cpi <- read.csv("Data/cpi.csv")
 housing <- read.csv("Data/housing.csv")
 ```
 
-[Link](https://github.com/tatDennis/JSC370/tree/main/Midterm) to GitHub repository.
-
-The data set was too large to include in the GitHub repository. I've added a link
-to where the data was acquired.
 
 ## Introduction
 
-In recent years, the cost of living in Canada has risen significantly, making it
-increasingly difficult for salaries to keep pace. For many young people entering
-the workforce, home ownership feels less and less attainable, while those who 
-already own real estate are seeing their assets appreciate in value. This has 
-fueled the common belief that the older generation had a much easier time 
-achieving financial stability than younger people today.
+With the next federal election just around the corner, issues of affordability
+and housing access have taken center stage in public discourse. Canada has
+experienced a notable increase in the cost of living over the past decade, evident
+by the rising inflation. These economic pressures have outpaced the growth
+of salaries, making it increasingly difficult for many Canadian young adults
+entering the workforce to achieve financial stability. For this demographic, home
+ownership has become an increasingly distant prospect. At the same time,
+those who already own property have seen their real estate assets appreciate
+significantly in value, contributing to a growing sense of inequality between
+generations.
 
-With this in mind, some interesting questions to ask are:
+This widening gap has fueled a prevailing narrative that older generations had
+a far easier path to financial security and home ownership than today’s youth.
+While anecdotal evidence and media commentary have popularized this belief,
+the goal of this study is to perform empirical analysis to determine the extent
+to which this perception is grounded in economic reality.
 
-Has the median income of Canadians kept up with inflation?
+This study seeks to explore these dynamics by examining the relationship be-
+tween inflation, housing prices, and salaries, in order to provide a clearer picture
+of how economic conditions have evolved over time.
 
-How has the median income changed throughout the years for young and old people?
-what about for men and women?
+## Research Questions 
 
-How does the change in income compare with the change in housing prices?
+To investigate the aforementioned imbalance in spending power between younger
+and older generations, this study will evaluate a multitude of economic factors.
+Several key questions will guide the analysis:
 
-## The Dataset
+Has the median income of Canadians kept pace with inflation over time?
 
-The first data set is called 'Income of individuals by age group, sex and income 
-source, Canada, provinces and selected census metropolitan areas', and contains 
-detailed information about annual income from 1976 until 2022. It also divides
-the data into the different provinces and territories of Canada, as well as 
-different demographics. 
+How has median income evolved across age groups, especially for younger versus
+older Canadians?
 
-The second data set is called 'Consumer Price Index, annual average, 
-not seasonally adjusted', and features the consumer Price index of many common
-products, ranging from 1914 until 2024. The CPI is a useful statistic for 
-measuring inflation, as it serves as a direct way to compare purchasing power
-throughout each year.
+How does the change in income compare to the rise in housing prices?
 
-The final data set is called 'Analytical house prices indicators', and similar
-to the above consumer price index, features the change in average house price.
-Although housing was contained in the above data set, it uses a different 
-definition of housing which involves rent prices, whereas this analysis seeks to
-understand housing ownership.
+Finally, can housing prices be predicted by analyzing the price trends of other
+consumer goods?
 
-## Methods
-
-The [income](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1110023901&pickMembers%5B0%5D=1.1&pickMembers%5B1%5D=2.5&pickMembers%5B2%5D=3.1&pickMembers%5B3%5D=4.1&cubeTimeFrame.startYear=1976&cubeTimeFrame.endYear=2022&referencePeriods=19760101%2C20220101) and [CPI](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000501) data sets were taken directly from the Statcan website.
-
-[Housing price index](https://data-explorer.oecd.org/vis?lc=en&tm=DF_HOUSE_PRICES&pg=0&snb=1&vw=tb&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_AN_HOUSE_PRICES%40DF_HOUSE_PRICES&df[ag]=OECD.ECO.MPD&df[vs]=1.0&pd=1960%2C2024&dq=.A.RHP.&to[TIME_PERIOD]=false) was downloaded from OECD.
+This paper can be downloaded <a href="JSC370 Project Report.pdf" target="_blank">here</a>.
 
 
-Finally, we convert each data set to use 2002 as its benchmark. This is done by
-adjusting all of the data sets so that 2002 has an index value of 100, and every
-other year is adjusted by this same value. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
+# Cleaning Data Sets
+
 housing <- housing |>
   mutate(Y = 100 / Value[Year == 2002],
          Adjusted.value = Value * Y) |>
   select(-Y)
-```
 
-```{r echo=FALSE}
 income <- income %>%
   group_by(Age.group, Sex) %>%  
   mutate(Adjusted.value = Value / Value[Year == 2022])
@@ -107,36 +108,20 @@ income <- income %>%
 ```
 
 
-We will keep these data sets separate, and merge them as needed for each question.
 
-## Preliminary Results
 
-### Income Index 
+```{r echo=FALSE, include=FALSE}
+# EDA
 
-Lets first examine the income data set. It contains the median income of Canadians
-from 1976 until 2022, and has information on male, female, and both sexes. Additionally,
-it features a variety of age groups for comparison. 
-
-An extremely interesting point to note is the years and demographics which had
-the largest income index are young men aged 15-24 in the 1970s, and older 
-women aged 55-64 in the 2010s and 2020s. This is most because during the 1970s,
-it was more common for teenage boys to work, as well as the fact that more women
-have joined the workforce compared to before.
-
-The lowest income index is mainly comprised of older people aged 55-64 in the 1970s.
-This is most likely because retirement benefits have improved by a lot since then.
-
-Its also important to note that this does not mean these people made the most
-or least amount of money, rather, the group that had the highest or lowest income
-within their own group, adjusted for inflation.
-```{r include=FALSE, echo=FALSE}
 unique(income$Age.group)
 unique(income$Sex)
 summary(income)
 summary(cpi)
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
+# EDA Summary
+
 kable(head(income[order(-income$Adjusted.value), ]), caption = "Largest Income Indexes", booktabs = TRUE) |>
   kable_styling(font_size = 10) |>
   kable_paper("hover", full_width = TRUE)
@@ -146,21 +131,11 @@ kable(tail(income[order(-income$Adjusted.value), ]), caption = "Lowest Income In
   kable_paper("hover", full_width = TRUE)
 ```
 
-### CPI
 
-Moving on to the CPI data set, it appears that not only are cigarettes and tobacco
-more expensive now than ever, but that it also had its cheapest recorded prices 
-in the 1970s. The price of nicotine products has been steadily increasing in order
-to encourage users to quit, which would explain the tripling in prices since 2002. 
 
-Additionally, oil in recent years is also at an all time high, most likely due
-to the ongoing conflicts around the world. 
+```{r echo=FALSE, include=FALSE}
+# EDA Summary
 
-Conversely, we see that digital computing equipment has decreased by a multiple of 30
-between 1990 and 2024, as computers and phones have become more accessible in
-recent years.
-
-```{r echo=FALSE}
 kable(head(cpi[order(cpi$Value), ]), caption = "Lowest CPI Values", booktabs = TRUE) |>
   kable_styling(font_size = 10) |>
   kable_paper("hover", full_width = TRUE)
@@ -170,11 +145,10 @@ kable(tail(cpi[order(cpi$Value), ]), caption = "Largest CPI Values", booktabs = 
   kable_paper("hover", full_width = TRUE)
 ```
 
-Taking a look at the overall CPI, filtering on "all items", we see that a dollar
-in 1976 is worth approximately $5.17 today. Although this is more of a generalization,
-it is the statistic which best captures inflation. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
+# EDA Summary
+
 cpi_filtered <- cpi %>%
   filter(Products.and.product.groups == "All-items") %>%
   filter(Year %in% c(1976, 2024))
@@ -186,9 +160,10 @@ kable(cpi_filtered, caption = "", booktabs = TRUE) |>
 ```
 
 
-And just for fun, it appears that egg prices have also increased by a factor of 5. 
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
+# EDA Summary
+
 cpi_filtered <- cpi %>%
   filter(Products.and.product.groups == "Eggs") %>%
   filter(Year %in% c(1976, 2024))
@@ -198,11 +173,10 @@ kable(cpi_filtered, caption = "", booktabs = TRUE) |>
   kable_paper("hover", full_width = TRUE)
 ```
 
-### Housing Index
 
-Finally, we take a look at the housing index. 
+```{r echo=FALSE, include=FALSE}
+# EDA Summary
 
-```{r echo=FALSE}
 kable(head(housing[order(housing$Adjusted.value), ]), caption = "Largest Housing Index Values", booktabs = TRUE) |>
   kable_styling(font_size = 10) |>
   kable_paper("hover", full_width = TRUE)
@@ -212,23 +186,10 @@ kable(tail(housing[order(housing$Adjusted.value), ]), caption = "Lowest Housing 
   kable_paper("hover", full_width = TRUE)
 ```
 
-It should be no surprise that housing prices have also increased by a lot since 
-the 70s, with prices reaching around recent years. Although these results appear
-to be aligned with the other products earlier, the housing data takes an average
-across all of Canada. Observing data sets of Vancouver or Toronto would most
-likely yield more extreme results. 
 
-## Summary
+```{r echo=FALSE, warning=FALSE, include=FALSE}
+# Graphing Consumer Pricing and Income Index Trends
 
-Now lets revisit some of our earlier questions from part 1. 
-
-#### Has the median income of Canadians kept up with inflation?
-
-Based on this output, we see that the CPI has been steadily increasing, and looks
-to be accelerating in growth since 2020. However, the income index of Canadians
-has mostly remained stagnant.  
-
-```{r echo=FALSE, warning=FALSE}
 both_sex <- income |>
   filter(Sex == "Both sexes") |>
   filter(Age.group == "25 to 54 years")
@@ -250,17 +211,10 @@ ggplot(question1, aes(x = Year)) +
   theme(legend.position = "right")
 ```
 
-#### How has the median income changed throughout the years for young and old people?
-What about for men and women?
 
-We see that older Canadians have had an income increase, whereas younger Canadians
-have an income decrease. Factors include less children working, seniors having 
-later retirements, as well as retirement benefits in the 21st century. 
+```{r echo=FALSE, include=FALSE}
+# Graphing Income Index Trends by Age Group
 
-We also see that women have had an increase in their annual income, most likely
-due to the fact historically, less women were part of the workforce.
-
-```{r echo=FALSE}
 both_sex_all_groups <- income |>
   filter(Sex == "Both sexes") |>
   filter(Age.group != "15 years and over")|>
@@ -277,7 +231,10 @@ ggplot(both_sex_all_groups, aes(x = Year, y = Adjusted.value, color = Age.group)
   theme(legend.position = "bottom") 
 ```
 
-```{r echo=FALSE}
+
+```{r echo=FALSE, include=FALSE}
+# Graphing Income Index Trends by Sex
+
 male_female_income <- income |>
   filter(Sex != "Both sexes") |>
   filter(Age.group == "25 to 54 years")
@@ -294,13 +251,11 @@ ggplot(male_female_income, aes(x = Year, y = Adjusted.value, color = Sex)) +
 
 ```
 
-#### How does the change in income compare with the change in housing prices?
 
-For this question, we will look at Canadians of both sexes, aged 25-54. We see 
-that the Canadian income index has not been able to keep up with the 
-housing index.
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
+# Graphing Housing and Income Index Trends
+
 question3 <- merge(
   both_sex,
   housing,
@@ -320,45 +275,45 @@ ggplot(question3, aes(x = Year)) +
 
 
 
-```{r}
-library(tidyr)
-library(dplyr)
+```{r echo=FALSE, include=FALSE}
+# Building Data Frame for Modeling
+
 cpi_reshape <- cpi %>%
   pivot_wider(
-    names_from = Products.and.product.groups,  # New column names will come from the "Product" column
-    values_from = Value    # Values will come from the "CPI" column
+    names_from = Products.and.product.groups,  
+    values_from = Value
   )
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
+# Making variable names friendly for GAM
+
 cpi_reshape_clean <- cpi_reshape |>
   select(Year, Food, Gasoline, "Mortgage interest cost", "Health care", "Dental care services",
-         "Education", "Property taxes and other special charges", "Transportation", "Alcoholic beverages", "Child care services", "Toiletry items and cosmetics")
+         "Education", "Property taxes and other special charges", "Transportation")
 
 cpi_reshape_clean <- merge(cpi_reshape_clean, housing, by = "Year", all.x = TRUE)
 
-```
-
-```{r}
 cpi_reshape_clean <- cpi_reshape_clean %>%
   rename_with(~ gsub(" ", ".", .), everything())
 ```
 
 
-```{r}
+```{r echo=FALSE, include=FALSE}
+# Linear Model
+
 model <- lm(Adjusted.value ~ Food + `Mortgage.interest.cost`  +
             `Health.care` + `Property.taxes.and.other.special.charges` + Year + Gasoline +
               Transportation
             , data = cpi_reshape_clean)
 
-# View the model summary
+
 summary(model)
-summary(model)$adj.r.squared
 ```
 
 
-```{r}
-library(mgcv)
+```{r echo=FALSE, include=FALSE}
+# GAM Model
 
 gam_model <- gam(Adjusted.value ~ s(Year) + Food + `Mortgage.interest.cost`  +
             `Health.care` + `Property.taxes.and.other.special.charges` + Gasoline +
@@ -368,16 +323,15 @@ summary(gam_model)
 
 ```
 
-```{r}
-library(caret)
+```{r echo=FALSE, include=FALSE}
+# Bagging Model
+
 project_train_index <- createDataPartition(cpi_reshape_clean$Adjusted.value, p = 0.7, list = FALSE)
 project_train <- cpi_reshape_clean[project_train_index, ]
 project_test <- cpi_reshape_clean[-project_train_index, ]
 
 
-```
 
-```{r}
 tree <- rpart(Adjusted.value ~ ., 
                     data = project_train, 
                     method = "class",
@@ -385,21 +339,14 @@ tree <- rpart(Adjusted.value ~ .,
                                             minbucket = 3, 
                                             cp = 0.01, 
                                             xval = 10))
-```
 
-
-```{r}
 plotcp(tree)
 printcp(tree)
 
 optimalcp = tree$cptable[which.min(tree$cptable[, "xerror"]), "CP"]
-```
 
-```{r}
 tree_prune <- prune(tree, cp = optimalcp)
-```
 
-```{r}
 bag<- randomForest(Adjusted.value~ ., 
                          data = project_train, 
                          mtry = ncol(project_train) - 1, 
@@ -412,7 +359,9 @@ bag_oob
 importance(bag)
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
+# Random Forest Model
+
 rf <- randomForest(Adjusted.value ~ ., 
                          data = project_train, 
                          importance = TRUE, 
@@ -423,20 +372,34 @@ rf_oob
 
 importance(rf)
 
+
+predictions <- predict(model)
+
+residuals <- cpi_reshape_clean$Adjusted.value - predictions
+
+MSE <- mean(residuals^2)
+
+gam_predictions <- predict(gam_model)
+
+gam_residuals <- cpi_reshape_clean$Adjusted.value - gam_predictions
+
+gam_MSE <- mean(gam_residuals^2)
 ```
 
 
-
-
-```{r}
-library(knitr)
+```{r echo=FALSE, include=FALSE}
+# Model Evaluation Summary
 
 model_performance <- data.frame(
   Model = c(
+    "Linear",
+    "GAM",
     "Bagging",
     "Random Forest"
   ),
   Error_MSE = c(
+    MSE,
+    gam_MSE,
     bag_oob,
     rf_oob
   )
@@ -446,22 +409,84 @@ kable(model_performance, col.names = c("Model", "Error / MSE"), caption = "Model
 ```
 
 
-```{r}
-predictions <- predict(model)
 
-residuals <- cpi_reshape_clean$Adjusted.value - predictions
+## Interactive Visuals {.tabset}
 
-MSE <- mean(residuals^2)
-print(MSE)
+### Historic Housing Price Index
 
-gam_predictions <- predict(gam_model)
-
-gam_residuals <- cpi_reshape_clean$Adjusted.value - gam_predictions
-
-gam_MSE <- mean(gam_residuals^2)
-print(gam_MSE)
+```{r echo = FALSE}
+cpi_reshape_clean |>
+  plot_ly(
+    x = ~Year,
+    y = ~Adjusted.value,
+    type = "scatter",
+    mode = "markers",
+    hoverinfo = "text",
+    text = ~paste0("Housing Price Index: ", round(Adjusted.value, 2), "\nYear: ", Year)
+  ) |>
+  layout(
+    title = "Housing Price Index through the years",
+    xaxis = list(title = "Year") ,
+    yaxis = list(title = "Housing Price Index"),
+    hovermode = "compare"
+  )
 ```
 
+Housing prices have continued to increase since the 2010's. Prices reached a peak in 2022, 
+but are still much higher than expected. 
+
+### Historic Housing and Income Index
+
+```{r echo=FALSE}
+question3 |>
+  plot_ly(
+    x = ~Year,
+    y = ~`Adjusted.value.x`,
+    z = ~`Adjusted.value.y`,
+    type = "scatter3d",
+    mode = "markers",
+    marker = list(size = 5),
+    hoverinfo = "text",
+    text = ~paste0("Year: ", Year, "\nHousing Price Index: ", round(Adjusted.value.y), "\nIncome Index: ", round(Adjusted.value.x))
+  ) |>
+  layout(
+    title = "3D scatterplot of Income Index and Housing Price Index",
+    scene = list(
+      xaxis = list(title = "Year") ,
+      yaxis = list(title = "Income Index"),
+      zaxis = list(title = "Housing Price Index")
+    )
+  )
+
+```
+
+Based on this plot, we see that the income index growth is much smaller than that of 
+the housing price index. As such, it is becoming increasingly difficult for Canadians 
+to purchase a home.
+
+### Extreme Price Indexes
+
+```{r echo=FALSE}
+
+top_bottom <- cpi %>%
+  unite("Name", Products.and.product.groups, Year, sep = " ")|>
+  arrange(desc(Value)) %>%
+  slice(c(1:5, (n() - 4):n()))  # top 5 and bottom 5
 
 
 
+pl <- top_bottom|>
+  ggplot(aes(x = fct_reorder(Name, Value), y = Value)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+ggplotly(pl)
+
+
+
+```
+
+Plotting the largest and smallest price indexes from our data set, we see that
+the cost of cigarettes and tobacco products were extremely cheap in the 1970s, whereas 
+things like gas nad fuel have skyrocketed in price. 
